@@ -29964,7 +29964,9 @@ var component = ReasonReact.statelessComponent("TodoItem");
 function make(item, onToggle, deleteTodo, _) {
   var newrecord = component.slice();
   newrecord[/* render */9] = (function () {
+      var match = item[/* completed */2];
       return React.createElement("li", {
+                  className: match !== 0 ? "completed" : "",
                   onClick: (function () {
                       return Curry._1(onToggle, /* () */0);
                     })

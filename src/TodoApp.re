@@ -11,7 +11,9 @@ module TodoItem = {
   let make = (~item, ~onToggle, ~deleteTodo, _children) => {
     ...component,
     render: (_) =>
-      <li onClick=(_evt => onToggle())>
+      <li
+        className=(item.completed ? "completed" : "")
+        onClick=(_evt => onToggle())>
         <div className="view">
           <input
             _type="checkbox"
