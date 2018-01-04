@@ -29961,18 +29961,25 @@ function str(prim) {
 
 var component = ReasonReact.statelessComponent("TodoItem");
 
-function make(item, onToggle, _) {
+function make(item, onToggle, deleteTodo, _) {
   var newrecord = component.slice();
   newrecord[/* render */9] = (function () {
-      return React.createElement("div", {
-                  className: "item",
+      return React.createElement("li", {
                   onClick: (function () {
                       return Curry._1(onToggle, /* () */0);
                     })
-                }, React.createElement("input", {
-                      checked: Js_boolean.to_js_boolean(item[/* completed */2]),
-                      type: "checkbox"
-                    }), item[/* title */1]);
+                }, React.createElement("div", {
+                      className: "view"
+                    }, React.createElement("input", {
+                          className: "toggle",
+                          checked: Js_boolean.to_js_boolean(item[/* completed */2]),
+                          type: "checkbox"
+                        }), React.createElement("label", undefined, item[/* title */1]), React.createElement("button", {
+                          className: "destroy",
+                          onClick: (function () {
+                              return Curry._1(deleteTodo, /* () */0);
+                            })
+                        })));
     });
   return newrecord;
 }
@@ -29994,6 +30001,7 @@ function make$1(onSubmit, _) {
       var text = param[/* state */2];
       var reduce = param[/* reduce */1];
       return React.createElement("input", {
+                  className: "new-todo",
                   placeholder: "Write something to do",
                   type: "text",
                   value: text,
@@ -30028,7 +30036,7 @@ var Input = /* module */[
 
 var component$2 = ReasonReact.reducerComponent("TodoApp");
 
-var lastId = [0];
+var lastId = [2];
 
 function newItem(text) {
   lastId[0] = lastId[0] + 1 | 0;
@@ -30039,73 +30047,110 @@ function newItem(text) {
         ];
 }
 
+function len(myList) {
+  if (myList) {
+    return 1 + len(myList[1]) | 0;
+  } else {
+    return 0;
+  }
+}
+
+function getLeftTodosAmount(items) {
+  var todosLeft = List.filter((function (item) {
+            return +(1 - item[/* completed */2] === /* true */1);
+          }))(items);
+  return Pervasives.string_of_int(len(todosLeft));
+}
+
 function make$2() {
   var newrecord = component$2.slice();
   newrecord[/* render */9] = (function (param) {
       var items = param[/* state */2][/* items */0];
       var reduce = param[/* reduce */1];
-      var numItems = List.length(items);
-      return React.createElement("div", {
-                  className: "app"
-                }, React.createElement("div", {
-                      className: "title"
-                    }, "What to do", ReasonReact.element(/* None */0, /* None */0, make$1(Curry._1(reduce, (function (text) {
+      return React.createElement("section", {
+                  className: "todoapp"
+                }, React.createElement("header", {
+                      className: "header"
+                    }, React.createElement("h1", undefined, "Todos"), ReasonReact.element(/* None */0, /* None */0, make$1(Curry._1(reduce, (function (text) {
                                     return /* AddItem */Block.__(0, [text]);
-                                  })), /* array */[]))), React.createElement("div", {
-                      className: "items"
-                    }, $$Array.of_list(List.map((function (item) {
-                                return ReasonReact.element(/* Some */[Pervasives.string_of_int(item[/* id */0])], /* None */0, make(item, Curry._1(reduce, (function () {
-                                                      return /* ToggleItem */Block.__(1, [item[/* id */0]]);
-                                                    })), /* array */[]));
-                              }), items))), React.createElement("div", {
+                                  })), /* array */[]))), React.createElement("section", {
+                      className: "main"
+                    }, React.createElement("ul", {
+                          className: "todo-list"
+                        }, $$Array.of_list(List.map((function (item) {
+                                    return ReasonReact.element(/* Some */[Pervasives.string_of_int(item[/* id */0])], /* None */0, make(item, Curry._1(reduce, (function () {
+                                                          return /* ToggleItem */Block.__(1, [item[/* id */0]]);
+                                                        })), Curry._1(reduce, (function () {
+                                                          return /* DeleteItem */Block.__(2, [item[/* id */0]]);
+                                                        })), /* array */[]));
+                                  }), items)))), React.createElement("footer", {
                       className: "footer"
-                    }, Pervasives.string_of_int(numItems) + " items"));
+                    }, React.createElement("span", {
+                          className: "todo-count"
+                        }, React.createElement("strong", undefined, getLeftTodosAmount(items)), " item left")));
     });
   newrecord[/* initialState */10] = (function () {
       return /* record */[/* items : :: */[
                 /* record */[
                   /* id */0,
-                  /* title */"Write some things to do",
-                  /* completed : false */0
+                  /* title */"Reason todoApp",
+                  /* completed : true */1
                 ],
-                /* [] */0
+                /* :: */[
+                  /* record */[
+                    /* id */1,
+                    /* title */"Write some things to do",
+                    /* completed : false */0
+                  ],
+                  /* [] */0
+                ]
               ]];
     });
   newrecord[/* reducer */12] = (function (action, param) {
       var items = param[/* items */0];
-      if (action.tag) {
-        var id = action[0];
-        var items$1 = List.map((function (item) {
-                var match = +(item[/* id */0] === id);
-                if (match !== 0) {
-                  return /* record */[
-                          /* id */item[/* id */0],
-                          /* title */item[/* title */1],
-                          /* completed */1 - item[/* completed */2]
-                        ];
-                } else {
-                  return item;
-                }
-              }), items);
-        return /* Update */Block.__(0, [/* record */[/* items */items$1]]);
-      } else {
-        return /* Update */Block.__(0, [/* record */[/* items : :: */[
-                      newItem(action[0]),
-                      items
-                    ]]]);
+      switch (action.tag | 0) {
+        case 0 : 
+            return /* Update */Block.__(0, [/* record */[/* items : :: */[
+                          newItem(action[0]),
+                          items
+                        ]]]);
+        case 1 : 
+            var id = action[0];
+            var items$1 = List.map((function (item) {
+                    var match = +(item[/* id */0] === id);
+                    if (match !== 0) {
+                      return /* record */[
+                              /* id */item[/* id */0],
+                              /* title */item[/* title */1],
+                              /* completed */1 - item[/* completed */2]
+                            ];
+                    } else {
+                      return item;
+                    }
+                  }), items);
+            return /* Update */Block.__(0, [/* record */[/* items */items$1]]);
+        case 2 : 
+            var id$1 = action[0];
+            var items$2 = List.filter((function (item) {
+                      return +(item[/* id */0] !== id$1);
+                    }))(items);
+            return /* Update */Block.__(0, [/* record */[/* items */items$2]]);
+        
       }
     });
   return newrecord;
 }
 
-exports.str            = str;
-exports.TodoItem       = TodoItem;
-exports.valueFromEvent = valueFromEvent;
-exports.Input          = Input;
-exports.component      = component$2;
-exports.lastId         = lastId;
-exports.newItem        = newItem;
-exports.make           = make$2;
+exports.str                = str;
+exports.TodoItem           = TodoItem;
+exports.valueFromEvent     = valueFromEvent;
+exports.Input              = Input;
+exports.component          = component$2;
+exports.lastId             = lastId;
+exports.newItem            = newItem;
+exports.len                = len;
+exports.getLeftTodosAmount = getLeftTodosAmount;
+exports.make               = make$2;
 /* component Not a pure module */
 
 
